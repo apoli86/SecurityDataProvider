@@ -6,11 +6,19 @@ namespace PortfolioSecurity.Batch.Services
     {
         public DateTime CalculateNavDate(DateTime date)
         {
-            DateTime navDate = date.AddDays(-1);
+            DateTime navDate = DateTime.Today;
 
             if (navDate.DayOfWeek == DayOfWeek.Sunday)
             {
                 navDate = navDate.AddDays(-2);
+            }
+            else if (navDate.DayOfWeek == DayOfWeek.Monday)
+            {
+                navDate = navDate.AddDays(-3);
+            }
+            else
+            {
+                navDate = navDate.AddDays(-1);
             }
 
             return navDate;
