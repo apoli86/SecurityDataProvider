@@ -86,7 +86,7 @@ namespace PortfolioSecurity.Batch.Jobs
             {
                 using (IModel channel = connection.CreateModel())
                 {
-                    channel.QueueDeclare(Queues.SecurityPriceRequestQueue, true, false, false);
+                    channel.CreateQueueIfNotExists(Queues.SecurityPriceRequestQueue);
 
                     IList<PortfolioNavDate> portfolioNavDateList = portfolioNavDateRepository.GetPortfolioNavDateListByNavDate(session, currentNavDate);
 
