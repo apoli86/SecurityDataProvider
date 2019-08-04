@@ -1,0 +1,2 @@
+kubectl delete pod securitydataproviderbatch
+kubectl apply -f securitydataproviderbatch.yaml
