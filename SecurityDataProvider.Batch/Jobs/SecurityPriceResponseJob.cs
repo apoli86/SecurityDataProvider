@@ -83,7 +83,9 @@ namespace SecurityDataProvider.Batch.Jobs
                     DateTime requestFromQueueNavDate = requestFromQueue.NavDate;
                     string requestFromQueueMessageId = requestFromQueue.MessageId;
 
-                    logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]");
+                    string securityPriceRequestLog = $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]";
+
+                    logger.Log(LogLevel.Info, securityPriceRequestLog);
 
                     Request requestFromDb = requestService.GetOrCreateRequest(session, requestFromQueue, RequestType.SecurityPriceRequest, requestFromQueueNavDate);
 
@@ -91,7 +93,7 @@ namespace SecurityDataProvider.Batch.Jobs
 
                     if (security == null)
                     {
-                        logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: missing Security with Symbol {requestFromQueueSymbol}");
+                        logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: missing Security with Symbol {requestFromQueueSymbol}");
 
                         requestService.SetRequestStatus(session, requestFromDb, RequestStatus.Error);
                         channel.SendNack(msg.DeliveryTag);
@@ -102,20 +104,20 @@ namespace SecurityDataProvider.Batch.Jobs
 
                     if (requestFromDb.RequestStatus == RequestStatus.Done)
                     {
-                        logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: already processed with success, see Request {requestFromDb.RequestId}");
+                        logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: already processed with success, see Request {requestFromDb.RequestId}");
 
-                        logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: retrieving SecurityPrice with same nav date and symbol");
+                        logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: retrieving SecurityPrice with same nav date and symbol");
 
                         SecurityPrice securityPrice = securityPriceService.GetSecurityPriceBySymbol(session, requestFromQueueSymbol, requestFromQueueNavDate.Date);
 
                         if (securityPrice != null)
                         {
-                            logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: sending SecurityPrice Id: {securityPrice.SecurityPriceId}, NavDate: {securityPrice.NavDate}, Symbol: {securityPrice.Security.Symbol}, OpenPrice: {securityPrice.OpenPrice}, ClosePrice: {securityPrice.ClosePrice}");
+                            logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: sending SecurityPrice Id: {securityPrice.SecurityPriceId}, NavDate: {securityPrice.NavDate}, Symbol: {securityPrice.Security.Symbol}, OpenPrice: {securityPrice.OpenPrice}, ClosePrice: {securityPrice.ClosePrice}");
 
                             PublishSecurityPrice(channel, securityPrice, requestFromQueue.MessageId);
                             channel.SendAck(msg.DeliveryTag);
 
-                            logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: sent SecurityPrice Id: {securityPrice.SecurityPriceId}, NavDate: {securityPrice.NavDate}, Symbol: {securityPrice.Security.Symbol}, OpenPrice: {securityPrice.OpenPrice}, ClosePrice: {securityPrice.ClosePrice}");
+                            logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: sent SecurityPrice Id: {securityPrice.SecurityPriceId}, NavDate: {securityPrice.NavDate}, Symbol: {securityPrice.Security.Symbol}, OpenPrice: {securityPrice.OpenPrice}, ClosePrice: {securityPrice.ClosePrice}");
 
                             return;
                         }
@@ -126,21 +128,21 @@ namespace SecurityDataProvider.Batch.Jobs
                         return;
                     }
 
-                    logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: retrieving SecurityPrice from IEXCloud for NavDate {requestFromQueueNavDate}");
+                    logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: retrieving SecurityPrice from IEXCloud for NavDate {requestFromQueueNavDate}");
                     SymbolPrice symbolPrice = iexCloudRequestManager.GetSymbolPrice(requestFromQueueSymbol);
-                    logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: SecurityPrice from IEXCloud retrived - Symbol: {symbolPrice.symbol}, OpenPrice: {symbolPrice.open}, ClosePrice: {symbolPrice.close} ");
+                    logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: SecurityPrice from IEXCloud retrived - Symbol: {symbolPrice.symbol}, OpenPrice: {symbolPrice.open}, ClosePrice: {symbolPrice.close} ");
 
-                    logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: Saving SecurityPrice from IEXCloud");
+                    logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: Saving SecurityPrice from IEXCloud");
 
                     SecurityPrice dbSecurityPrice = SaveSecurityPrice(session, symbolPrice, security, requestFromQueueNavDate);
 
-                    logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: SecurityPrice Id: {dbSecurityPrice.SecurityPriceId} saved");
+                    logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: SecurityPrice Id: {dbSecurityPrice.SecurityPriceId} saved");
 
-                    logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: Sending SecurityPrice Id: {dbSecurityPrice.SecurityPriceId}, NavDate: {dbSecurityPrice.NavDate}, Symbol: {dbSecurityPrice.Security.Symbol}, OpenPrice: {dbSecurityPrice.OpenPrice}, ClosePrice: {dbSecurityPrice.ClosePrice} on {Queues.SecurityPriceResponseQueue}");
+                    logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: Sending SecurityPrice Id: {dbSecurityPrice.SecurityPriceId}, NavDate: {dbSecurityPrice.NavDate}, Symbol: {dbSecurityPrice.Security.Symbol}, OpenPrice: {dbSecurityPrice.OpenPrice}, ClosePrice: {dbSecurityPrice.ClosePrice} on {Queues.SecurityPriceResponseQueue}");
 
                     PublishSecurityPrice(channel, dbSecurityPrice, requestFromQueue.MessageId);
 
-                    logger.Log(LogLevel.Info, $"[SecurityPriceRequest: NavDate {requestFromQueueNavDate}, Symbol {requestFromQueueSymbol}, MessageId {requestFromQueueMessageId}]: SecurityPrice Id: {dbSecurityPrice.SecurityPriceId} on {Queues.SecurityPriceResponseQueue} sent");
+                    logger.Log(LogLevel.Info, $"{securityPriceRequestLog}: SecurityPrice Id: {dbSecurityPrice.SecurityPriceId} on {Queues.SecurityPriceResponseQueue} sent");
 
                     requestService.SetRequestStatus(session, requestFromDb, RequestStatus.Done);
 
