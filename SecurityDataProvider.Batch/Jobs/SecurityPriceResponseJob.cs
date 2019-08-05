@@ -89,7 +89,7 @@ namespace SecurityDataProvider.Batch.Jobs
 
                     Request requestFromDb = requestService.GetOrCreateRequest(session, requestFromQueue, RequestType.SecurityPriceRequest, requestFromQueueNavDate);
 
-                    Entities.Security security = securityService.GetSecurityBySymbol(session, requestFromQueueSymbol, DateTime.Today);
+                    Entities.Security security = securityService.GetSecurityBySymbol(session, requestFromQueueSymbol);
 
                     if (security == null)
                     {

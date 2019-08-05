@@ -50,7 +50,7 @@ namespace SecurityDataProvider.Services
             return securityList;
         }
 
-        public Security GetSecurityBySymbol(ISession session, string symbol, DateTime requestDate)
+        public Security GetSecurityBySymbol(ISession session, string symbol)
         {
             if (session == null)
             {
@@ -64,7 +64,7 @@ namespace SecurityDataProvider.Services
 
             string sanitizedSymbol = symbol.ToUpper();
 
-            return securityRepository.GetSecurityBySymbol(session, sanitizedSymbol, requestDate);
+            return securityRepository.GetLastSecurityBySymbol(session, sanitizedSymbol);
         }
     }
 }

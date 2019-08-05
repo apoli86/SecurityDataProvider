@@ -10,6 +10,6 @@ namespace SecurityDataProvider.DAL.Repositories
         void SaveOrUpdate(ISession session, Security security);
         void Insert(IStatelessSession session, Security security);
         IList<Security> GetSecurityListByRequestDate(ISession session, DateTime requestDate);
-        Security GetSecurityBySymbol(ISession session, string symbol, DateTime requestDate);
+        Security GetLastSecurityBySymbol(ISession session, string symbol);
     }
 }

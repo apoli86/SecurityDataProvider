@@ -12,9 +12,9 @@ namespace SecurityDataProvider.DAL.Repositories
             return session.QueryOver<Security>().Where(s => s.RequestDate == requestDate.Date).List();
         }
 
-        public Security GetSecurityBySymbol(ISession session, string symbol, DateTime requestDate)
+        public Security GetLastSecurityBySymbol(ISession session, string symbol)
         {
-            return session.QueryOver<Security>().Where(s => s.Symbol == symbol && s.RequestDate == requestDate).SingleOrDefault();
+            return session.QueryOver<Security>().Where(s => s.Symbol == symbol).OrderBy(x => x.RequestDate).Desc.Take(1).SingleOrDefault();
         }
 
         public void Insert(IStatelessSession session, Security security)
