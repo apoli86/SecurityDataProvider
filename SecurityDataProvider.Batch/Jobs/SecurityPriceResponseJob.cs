@@ -163,7 +163,7 @@ namespace SecurityDataProvider.Batch.Jobs
 
         private Entities.SecurityPrice SaveSecurityPrice(ISession session, SymbolPrice symbolPrice, Entities.Security security, DateTime navDate)
         {
-            SecurityPrice securityPrice = securityPriceBuilder.BuildSecurityPrice(security, symbolPrice.open, symbolPrice.close, navDate);
+            SecurityPrice securityPrice = securityPriceBuilder.BuildSecurityPrice(security, symbolPrice.open ?? 0, symbolPrice.close ?? 0, navDate);
 
             return securityPriceService.SaveSecurityPrice(session, securityPrice);
         }

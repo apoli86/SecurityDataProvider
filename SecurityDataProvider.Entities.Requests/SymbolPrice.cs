@@ -6,7 +6,7 @@ namespace SecurityDataProvider.Entities.Requests
     {
         public string symbol { get; set; }
         public DateTime date { get; set; }
-        public decimal open { get; set; }
-        public decimal close { get; set; }
+        public decimal? open { get; set; }
+        public decimal? close { get; set; }
     }
 }
